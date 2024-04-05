@@ -1,5 +1,5 @@
 from model import Model
-from request import ModelRequest, ModelUpdateRequest
+from request import ModelRequest
 from quart import Quart, request
 import aiohttp
 
@@ -7,19 +7,14 @@ app = Quart(__name__)
 
 model = None
 
-model_paths = {
-    'ory': '5gram_model.bin',
-    'eng': '5gram_model_eng.bin'
-}
-
-vocab_paths = {
-    'ory': 'lexicon.txt',
-    'eng': 'lexicon_eng.txt'
-}
-
 freq_dict_paths = {
     'ory': 'freq_dict.txt',
     'eng': 'freq_dict_eng.txt'
+}
+
+spello_model_paths = {
+    'ory': 'spello_model.pkl',
+    'eng': 'spello_model_eng.pkl'
 }
 
 
@@ -27,10 +22,10 @@ freq_dict_paths = {
 async def startup():
     app.client = aiohttp.ClientSession()
     global model
-    model = Model(app, model_paths, vocab_paths, freq_dict_paths)
+    model = Model(app, freq_dict_paths)
 
 @app.route('/', methods=['POST'])
-async def embed():
+async def infer():
     global model
     data = await request.get_json()
     req = ModelRequest(**data)
@@ -39,11 +34,13 @@ async def embed():
 
 @app.route('/', methods=['PUT'])
 async def update():
+    # print("PUT")
     global model
     data = await request.get_json()
-    req = ModelUpdateRequest(**data)
-    result = await model.update_symspell(req)
+    req = ModelRequest(**data)
+    result = await model.update(req)
     return result
+
 
 if __name__ == "__main__":
     app.run()

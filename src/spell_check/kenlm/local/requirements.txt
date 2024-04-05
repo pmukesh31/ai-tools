@@ -2,3 +2,4 @@ quart
 aiohttp
 python-Levenshtein
 requests
+symspellpy

@@ -10,16 +10,11 @@ RUN apt-get update && apt-get install -y cmake g++ zlib1g-dev
 COPY requirements.txt requirements.txt
 RUN pip3 install -r requirements.txt
 
-# Install kenlm using pip
-RUN pip3 install https://github.com/kpu/kenlm/archive/master.zip
+# Install wget
 RUN apt-get update && apt-get install -y wget
 
 # Download the files using wget
-RUN wget "https://drive.google.com/uc?export=download&id=1frSw5-qfRMgrYs4QL961s2yYuq2KplEM" -O '5gram_model.bin'
-RUN wget "https://drive.google.com/uc?export=download&id=1o31Z4TZbAOEt6E8Rx7VMONJOGJH-5Mwk" -O 'lexicon.txt'
 RUN wget "https://drive.google.com/uc?export=download&id=14cMmeDPlAODbRe37CdHLnhClGX7JXG-A" -O 'freq_dict.txt'
-RUN wget "https://drive.google.com/uc?export=download&id=1-Dtk5socjYdeGyqhbQzG-rvWJfWVFGqv" -O '5gram_model_eng.bin' 
-RUN wget "https://drive.google.com/uc?export=download&id=1-59pDTvEXCMUZ-NQ8BwmCnHQZh4Eg6Gw" -O 'lexicon_eng.txt'
 RUN wget "https://drive.google.com/uc?export=download&id=1Ztj6k0A4BMi_o87qwSDKJQ6cyhvlvneD" -O 'freq_dict_eng.txt'
 
 # Copy the rest of the application code to the working directory
