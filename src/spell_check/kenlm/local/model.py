@@ -21,6 +21,11 @@ freq_dict_paths = {
     'eng': 'freq_dict_eng.txt'
 }
 
+texts_paths = {
+    'ory': 'texts.txt',
+    'eng': 'texts_eng.txt'
+}
+
 
 class TextCorrector:
     def __init__(self, model_paths, vocab_paths, freq_dict_paths):
@@ -29,11 +34,14 @@ class TextCorrector:
             'ory': kenlm.Model(model_paths['ory']),
             'eng': kenlm.Model(model_paths['eng'])
         }
+
+        print('Loading vocabularies...')
         self.vocabs = {
             'ory': self.create_vocab_lexicon(vocab_paths['ory']),
             'eng': self.create_vocab_lexicon(vocab_paths['eng'])
         }
 
+        print('Loading symspell models...')
         self.symspell_models = {
             'ory': self.create_symspell_model(freq_dict_paths['ory']),
             'eng': self.create_symspell_model(freq_dict_paths['eng'])
@@ -47,6 +55,8 @@ class TextCorrector:
         self.vocab = self.vocabs[lang]
         self.symspell_model = self.symspell_models[lang]
 
+        print(self.symspell_models['eng'].words)
+
     def create_vocab_lexicon(self, lexicon_path):
         vocabulary = []
         with open(lexicon_path, 'r', encoding='utf-8') as file:
@@ -59,11 +69,6 @@ class TextCorrector:
         sym_spell = SymSpell(max_dictionary_edit_distance=2, prefix_length=7)
         sym_spell.load_dictionary(freq_dict_path, term_index=0, count_index=1, separator=' ')
         return sym_spell
-
-    # def generate_candidates(self, word, max_distance=1):
-    #     len_range = range(len(word) - max_distance, len(word) + max_distance + 1)
-    #     filtered_vocab = [vocab_word for vocab_word in self.vocab if len(vocab_word) in len_range]
-    #     return [vocab_word for vocab_word in filtered_vocab if 0 <= Levenshtein.distance(word, vocab_word) <= max_distance]
 
     def generate_candidates(self, word, max_distance=1):
         suggestions = self.symspell_model.lookup(word, Verbosity.CLOSEST, max_distance)
@@ -112,7 +117,7 @@ class TextCorrector:
             corrected_sentences.append(best_sentence)
 
         return ' '.join(corrected_sentences)
-    
+
     def load_freq_dict(self, freq_dict_path):
         freq_dict = {}
         with open(freq_dict_path, 'r') as f:
@@ -120,41 +125,6 @@ class TextCorrector:
                 word, freq = line.split()
                 freq_dict[word] = int(freq)
         return freq_dict
-    
-    def make_updation_counter(self, text):
-
-        if type(text) == list:
-            text = ' '.join(text)
-
-        # remove punctuations from the text
-        text = ''.join(e for e in text if e.isalnum() or e.isspace())
-        words = text.split()
-
-        # create a dictionary of words and their frequencies
-        dict = Counter(words)
-
-        return dict
-    
-    def update_symspell_model(self, lang, text):
-        # update the frequency dictionary
-        current_freq_dict_counter = Counter(self.load_freq_dict(freq_dict_paths[lang]))
-        new_freq_dict_counter = self.make_updation_counter(text)
-
-        # merge the two frequency dictionaries
-        freq_dict_counter = current_freq_dict_counter + new_freq_dict_counter
-
-        freq_dict = {}
-        for word, freq in freq_dict_counter.items():
-            freq_dict[word] = int(freq)
-
-        with open(freq_dict_paths[lang], 'w') as f:
-            for word, freq in freq_dict.items():
-                f.write(word + ' ' + str(freq) + '\n')
-
-        # retrain the model with the updated frequency dictionary
-        self.symspell_models[lang] = self.create_symspell_model(freq_dict_paths[lang])
-
-        return 'Model updated successfully'
 
 
 class Model():

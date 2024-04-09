@@ -14,7 +14,6 @@ curl -X POST -H "Content-Type: application/json" -d '{
 "lang" : "eng"
 }' http://localhost:8000/
 
-
 **curl request for update:**
 
 curl -X PUT -H "Content-Type: application/json" -d '{
@@ -32,6 +31,6 @@ curl -X PUT -H "Content-Type: application/json" -d '{
 }' http://localhost:8000/
 
 curl -X PUT -H "Content-Type: application/json" -d '{
-"text": ["how to apply for", "scheme for my paddi crop"],
+"text": ["how to apply for", "scheme for my paddy crop"],
 "lang" : "eng"
 }' http://localhost:8000/

@@ -1,4 +1,5 @@
 from model import Model
+from update import UpdationModel
 from request import ModelRequest, ModelUpdateRequest
 from quart import Quart, request
 import aiohttp
@@ -22,12 +23,19 @@ freq_dict_paths = {
     'eng': 'freq_dict_eng.txt'
 }
 
+texts_paths = {
+    'ory': 'texts.txt',
+    'eng': 'texts_eng.txt'
+}
+
 
 @app.before_serving
 async def startup():
     app.client = aiohttp.ClientSession()
     global model
     model = Model(app, model_paths, vocab_paths, freq_dict_paths)
+
+    print("Model loaded successfully")
 
 @app.route('/', methods=['POST'])
 async def embed():
@@ -42,7 +50,11 @@ async def update():
     global model
     data = await request.get_json()
     req = ModelUpdateRequest(**data)
-    result = await model.update_symspell(req)
+    result = await UpdationModel(model_paths, vocab_paths, freq_dict_paths, texts_paths).update(req)
+
+    if result:
+        model = Model(app, model_paths, vocab_paths, freq_dict_paths)
+
     return result
 
 if __name__ == "__main__":
